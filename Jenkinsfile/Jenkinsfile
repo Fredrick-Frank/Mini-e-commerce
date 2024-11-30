@@ -3,11 +3,9 @@ pipeline {
     environment {
         //define your vars
         NAME = 'Chiemeka'
-        HELM_HOME = "/usr/local/bin/helm"  // Path to Helm binary
     }
 
     stages {
-
         stage('Login to docker hub') {
             steps {
                 sh "cat passwd | docker login -u igwefredrickchiemeka@gmail.com --password-stdin"
