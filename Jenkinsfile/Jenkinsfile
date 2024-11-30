@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+    environment {
+        //define your vars
+        NAME = 'Chiemeka'
+        HELM_HOME = "/usr/local/bin/helm"  // Path to Helm binary
+    }
+
+    stages {
+
+        stage('Login to docker hub') {
+            steps {
+                sh "cat passwd | docker login -u igwefredrickchiemeka@gmail.com --password-stdin"
+                echo 'Login successfully'
+            }
+        }
+        
+        stage('Build docker images') {
+            steps {
+                // Building stage
+                echo "Welcome to ${NAME} Jenkins World"
+                sh '''
+                docker build . -t igfred/ecommerce:v01
+                '''
+                echo " The Build Url is ${BUILD_URL}"
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                sh '''
+                docker push igfred/ecommerce:v01
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh "docker images"
+            }
+        }
+        stage('Running the image on K8s Cluster') {
+            steps {
+                sh " kubectl apply -f ./k8s_deployment/"
+            }
+        }
+        stage('Confirm Deployment is running') {
+            steps {
+                sh '''
+                kubectl get po,svc,deployment
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            // Actions to be perform when the pipeline is successful
+            echo "DevOps Project... Agba builder ${BUILD_ID} build"
+        }
+        failure {
+            echo "Pipeline failed...Oooops T-pain"
+        }
+    }
+}
